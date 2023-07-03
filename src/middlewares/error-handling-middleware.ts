@@ -1,13 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { ApplicationError } from '@/protocols';
 
-export function handleApplicationErrors(
-  err: ApplicationError | Error,
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-) {
+export function handleApplicationErrors(err: ApplicationError | Error, _req: Request, res: Response) {
   if (err.name === 'CannotEnrollBeforeStartDateError') {
     return res.status(httpStatus.BAD_REQUEST).send({
       message: err.message,
