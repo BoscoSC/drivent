@@ -1,6 +1,6 @@
 import faker from '@faker-js/faker';
 import { generateCPF, getStates } from '@brazilian-utils/brazilian-utils';
-import { User } from '@prisma/client';
+import { Enrollment, User } from '@prisma/client';
 
 import { createUser } from './users-factory';
 import { prisma } from '@/config';
@@ -39,5 +39,18 @@ export function createhAddressWithCEP() {
     bairro: 'Itaim Bibi',
     cidade: 'São Paulo',
     uf: 'SP',
+  };
+}
+
+export function buildEnrollment(): Enrollment {
+  return {
+    id: faker.datatype.number({ min: 1, max: 100 }),
+    userId: faker.datatype.number({ min: 1, max: 100 }),
+    cpf: generateCPF(),
+    birthday: faker.date.past(),
+    phone: faker.phone.phoneNumber('(##) 9####-####'),
+    name: faker.name.findName(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 }

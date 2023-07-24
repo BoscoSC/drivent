@@ -1,24 +1,25 @@
+import { Room } from '@prisma/client';
 import { prisma } from '@/config';
 
-async function findAllByHotelId(hotelId: number) {
-  return prisma.room.findMany({
+async function findRoomById(id: number) {
+  return prisma.room.findUnique({
     where: {
-      hotelId,
+      id,
     },
   });
 }
 
-async function findById(roomId: number) {
-  return prisma.room.findFirst({
-    where: {
-      id: roomId,
-    },
+export async function createRoom(data: CreateRoom) {
+  return prisma.room.create({
+    data,
   });
 }
+
+export type CreateRoom = Omit<Room, 'id' | 'updatedAt' | 'createdAt'>;
 
 const roomRepository = {
-  findAllByHotelId,
-  findById,
+  findRoomById,
+  createRoom,
 };
 
 export default roomRepository;
