@@ -1,52 +1,50 @@
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import httpStatus from 'http-status';
+
 import { AuthenticatedRequest } from '@/middlewares';
 import bookingService from '@/services/booking-service';
-import { CreateBookingSchema, UpdateBookingSchema } from '@/schemas';
 
-export async function getBookingByUser(req: AuthenticatedRequest, res: Response) {
-  const { userId } = req;
-
+export async function listBooking(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const booking = await bookingService.getBookingByUserId(userId);
-
-    return res.status(httpStatus.OK).send(booking);
+    const { userId } = req;
+    const booking = await bookingService.getBooking(userId);
+    return res.status(httpStatus.OK).send({
+      id: booking.id,
+      Room: booking.Room,
+    });
   } catch (error) {
-    return res.sendStatus(httpStatus.NOT_FOUND);
+    next(error);
   }
 }
 
-export async function createBooking(req: AuthenticatedRequest, res: Response) {
-  const { userId } = req;
-  const { roomId } = req.body as CreateBookingSchema;
-
+export async function bookingRoom(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const bookingId = await bookingService.createBooking(userId, roomId);
+    const { userId } = req;
+    const { roomId } = req.body as Record<string, number>;
 
-    return res.status(httpStatus.OK).send({ bookingId });
+    const booking = await bookingService.bookingRoomById(userId, roomId);
+
+    return res.status(httpStatus.OK).send({
+      bookingId: booking.id,
+    });
   } catch (error) {
-    if (error.name === 'RoomNotAvailableError') {
-      return res.sendStatus(httpStatus.FORBIDDEN);
-    }
-    return res.sendStatus(httpStatus.NOT_FOUND);
+    next(error);
   }
 }
 
-export async function updateBooking(req: AuthenticatedRequest, res: Response) {
+export async function changeBooking(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const { userId } = req;
-  const { roomId } = req.body as UpdateBookingSchema;
   const bookingId = Number(req.params.bookingId);
-
-  if (isNaN(bookingId)) return res.sendStatus(httpStatus.BAD_REQUEST);
+  if (!bookingId) return res.sendStatus(httpStatus.BAD_REQUEST);
 
   try {
-    const id = await bookingService.updateBooking(userId, roomId, bookingId);
+    const { roomId } = req.body as Record<string, number>; // <tipo da chave, tipo do valor>
+    const booking = await bookingService.changeBookingRoomById(userId, roomId);
 
-    return res.status(httpStatus.OK).send({ bookingId: id });
+    return res.status(httpStatus.OK).send({
+      bookingId: booking.id,
+    });
   } catch (error) {
-    if (error.name === 'RoomNotAvailableError') {
-      return res.sendStatus(httpStatus.FORBIDDEN);
-    }
-    return res.sendStatus(httpStatus.NOT_FOUND);
+    next(error);
   }
 }
